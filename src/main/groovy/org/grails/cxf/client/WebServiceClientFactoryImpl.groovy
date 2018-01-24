@@ -21,9 +21,14 @@ import org.apache.cxf.transport.Conduit
 import org.apache.cxf.transport.http.HTTPConduit
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy
 
+import javax.net.ssl.KeyManager
+import javax.net.ssl.KeyManagerFactory
+import javax.net.ssl.TrustManager
+import javax.net.ssl.TrustManagerFactory
 import javax.xml.namespace.QName
 import javax.xml.ws.BindingProvider
 import java.lang.reflect.*
+import java.security.KeyStore
 
 class WebServiceClientFactoryImpl implements WebServiceClientFactory {
 
@@ -301,7 +306,27 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
                 parameters = new TLSClientParameters();
             }
 
-            //todo: still need to vet out how to do keymanager/trustmanagers
+            if (tlsClientParameters?.trustManagerJksPath) {
+                KeyStore keyStore = KeyStore.getInstance('JKS')
+                InputStream is = WebServiceClientFactoryImpl.classLoader.getResourceAsStream(tlsClientParameters?.trustManagerJksPath)
+                if (!is) throw new Exception('Invalid path -> ' + tlsClientParameters?.trustManagerJksPath)
+                keyStore.load(is, tlsClientParameters.trustpass.toCharArray())
+                TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+                trustFactory.init(keyStore)
+                TrustManager[] tm = trustFactory.getTrustManagers()
+                parameters.setTrustManagers(tm)
+            }
+
+            if (tlsClientParameters?.keyManagerJksPath) {
+                KeyStore keyStore = KeyStore.getInstance('JKS')
+                InputStream is = WebServiceClientFactoryImpl.classLoader.getResourceAsStream(tlsClientParameters?.keyManagerJksPath)
+                if (!is) throw new Exception('Invalid path -> ' + tlsClientParameters?.keyManagerJksPath)
+                keyStore.load(is, tlsClientParameters.trustpass.toCharArray())
+                KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+                keyFactory.init(keyStore, tlsClientParameters.trustpass.toCharArray())
+                KeyManager[] km = keyFactory.getKeyManagers()
+                parameters.setKeyManagers(km)
+            }
 
             if (tlsClientParameters?.useHttpsURLConnectionDefaultSslSocketFactory != null) {
                 parameters.useHttpsURLConnectionDefaultSslSocketFactory = tlsClientParameters.useHttpsURLConnectionDefaultSslSocketFactory

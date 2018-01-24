@@ -840,6 +840,9 @@ useHttpsURLConnectionDefaultSslSocketFactory: [boolean]
 useHttpsURLConnectionDefaultHostnameVerifier: [boolean]
 cipherSuitesFilter.exclude: [List<String>]
 cipherSuitesFilter.include: [List<String>]
+trustManagerJksPath: '/something.jks'
+keyManagerJksPath: '/something.jks'
+trustpass: 'changeit'
 
 This is done via the configuration block such as:
 
@@ -853,9 +856,12 @@ cxf {
             tlsClientParameters = [
                 disableCNCheck: true,
                 sslCacheTimeout: 100,
-                secureSocketProtocol: CxfClientConstants.SSL_PROTOCOL_SSLV3
-                cipherSuitesFilter.include = ['.*_EXPORT_.*','.*_EXPORT1024_.*']
-                cipherSuitesFilter.exclude = ['.*_DH_anon_.*']
+                secureSocketProtocol: CxfClientConstants.SSL_PROTOCOL_SSLV3,
+                cipherSuitesFilter.include = ['.*_EXPORT_.*','.*_EXPORT1024_.*'],
+                cipherSuitesFilter.exclude = ['.*_DH_anon_.*'],
+                trustManagerJksPath : '/something.jks',
+                keyManagerJksPath : '/something.jks',
+                trustpass : 'changeit'
             ]
         }
     }
