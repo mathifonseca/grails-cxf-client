@@ -300,8 +300,9 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
 
             if (tlsClientParameters?.trustManagerJksPath) {
                 KeyStore keyStore = KeyStore.getInstance('JKS')
-                File truststore = new File(tlsClientParameters.trustManagerJksPath.toString())
-                keyStore.load(new FileInputStream(truststore), tlsClientParameters.trustpass.toCharArray())
+                InputStream is = WebServiceClientFactoryImpl.classLoader.getResourceAsStream(tlsClientParameters?.trustManagerJksPath)
+                if (!is) throw new Exception('Invalid path -> ' + tlsClientParameters?.trustManagerJksPath)
+                keyStore.load(is, tlsClientParameters.trustpass.toCharArray())
                 TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
                 trustFactory.init(keyStore)
                 TrustManager[] tm = trustFactory.getTrustManagers()
@@ -310,8 +311,9 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
 
             if (tlsClientParameters?.keyManagerJksPath) {
                 KeyStore keyStore = KeyStore.getInstance('JKS')
-                File truststore = new File(tlsClientParameters.keyManagerJksPath.toString())
-                keyStore.load(new FileInputStream(truststore), tlsClientParameters.trustpass.toCharArray())
+                InputStream is = WebServiceClientFactoryImpl.classLoader.getResourceAsStream(tlsClientParameters?.keyManagerJksPath)
+                if (!is) throw new Exception('Invalid path -> ' + tlsClientParameters?.keyManagerJksPath)
+                keyStore.load(is, tlsClientParameters.trustpass.toCharArray())
                 KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
                 keyFactory.init(keyStore, tlsClientParameters.trustpass.toCharArray())
                 KeyManager[] km = keyFactory.getKeyManagers()
