@@ -290,7 +290,7 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
         }
     }
 
-
+    // Todo
     private static void setSsl(Object cxfProxy, String secureSocketProtocol, Map tlsClientParameters) {
         //secureSocketProtocol should be one in Constants file, but let them set it to whatever
         if (![CxfClientConstants.SSL_PROTOCOL_SSLV3, CxfClientConstants.SSL_PROTOCOL_TLSV1].contains(secureSocketProtocol)) {
@@ -328,11 +328,11 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
                 parameters.setKeyManagers(km)
             }
 
-            if (tlsClientParameters?.useHttpsURLConnectionDefaultSslSocketFactory != null) {
+            if (tlsClientParameters?.useHttpsURLConnectionDefaultSslSocketFactory) {
                 parameters.useHttpsURLConnectionDefaultSslSocketFactory = tlsClientParameters.useHttpsURLConnectionDefaultSslSocketFactory
             }
 
-            if (tlsClientParameters?.cipherSuitesFilter != null) {
+            if (tlsClientParameters?.cipherSuitesFilter) {
                 parameters.cipherSuitesFilter = new FiltersType()
                 if (tlsClientParameters?.cipherSuitesFilter?.exclude) {
                     parameters.cipherSuitesFilter.exclude.addAll(tlsClientParameters.cipherSuitesFilter.exclude.collect())
@@ -343,18 +343,18 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
                 }
             }
 
-            if (tlsClientParameters?.useHttpsURLConnectionDefaultHostnameVerifier != null) {
+            if (tlsClientParameters?.useHttpsURLConnectionDefaultHostnameVerifier) {
                 parameters.useHttpsURLConnectionDefaultHostnameVerifier = tlsClientParameters.useHttpsURLConnectionDefaultHostnameVerifier
             }
 
-            if (tlsClientParameters?.disableCNCheck != null) {
+            if (tlsClientParameters?.disableCNCheck) {
                 parameters.disableCNCheck = tlsClientParameters.disableCNCheck
             }
-            if (tlsClientParameters?.sslCacheTimeout != null) {
+            if (tlsClientParameters?.sslCacheTimeout) {
                 parameters.sslCacheTimeout = tlsClientParameters.sslCacheTimeout
             }
 
-            parameters.setSecureSocketProtocol(secureSocketProtocol ?: tlsClientParameters.secureSocketProtocol);
+            parameters.setSecureSocketProtocol(secureSocketProtocol ?: tlsClientParameters.secureSocketProtocol)
             conduit.tlsClientParameters = parameters
         }
     }
