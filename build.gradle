@@ -12,21 +12,22 @@ buildscript {
 }
 
 plugins {
-    id "io.spring.dependency-management" version "0.5.2.RELEASE"
+    id "io.spring.dependency-management" version "1.0.4.RELEASE"
     id "com.jfrog.bintray" version "1.2"
 }
 
 version "3.0.7"
 group "org.grails.plugins"
 
-apply plugin: 'maven-publish'
+apply plugin: 'maven'
+//apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: "org.grails.grails-plugin"
 apply plugin: "org.grails.grails-doc"
 // Used for publishing to central repository, remove if not needed
-apply from:'https://raw.githubusercontent.com/grails/grails-profile-repository/master/profiles/plugin/templates/grailsCentralPublishing.gradle'
-apply from:'https://raw.githubusercontent.com/grails/grails-profile-repository/master/profiles/plugin/templates/bintrayPublishing.gradle'
+//apply from:'https://raw.githubusercontent.com/grails/grails-profile-repository/master/profiles/plugin/templates/grailsCentralPublishing.gradle'
+//apply from:'https://raw.githubusercontent.com/grails/grails-profile-repository/master/profiles/plugin/templates/bintrayPublishing.gradle'
 
 ext {
     grailsVersion = project.grailsVersion
@@ -97,4 +98,21 @@ bintrayUpload.dependsOn sourcesJar, javadocJar
 jar {
     exclude 'org/grails/cxf/test/**',
             'net/webservicex/**'
+}
+
+uploadArchives {
+
+    repositories {
+
+        mavenDeployer {
+
+            repository(url: "http://54.209.219.49:8081/nexus/content/repositories/thirdparty") {
+                authentication(userName: "deployment", password: "peya")
+            }
+
+            pom.version = "3.1.0"
+            pom.artifactId = "cxf-client"
+            pom.groupId = "com.pedidosya"
+        }
+    }
 }
