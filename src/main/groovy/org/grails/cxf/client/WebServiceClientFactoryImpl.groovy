@@ -21,6 +21,7 @@ import org.apache.cxf.transport.Conduit
 import org.apache.cxf.transport.http.HTTPConduit
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy
 
+import javax.net.ssl.CertPathTrustManagerParameters
 import javax.net.ssl.KeyManager
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.TrustManager
@@ -297,35 +298,28 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
             log.info "The provided secureSocketProtocol of $secureSocketProtocol might not be recognized"
         }
 
-        Client client = ClientProxy.getClient(cxfProxy);
-        Conduit c = client.getConduit();
+        Client client = ClientProxy.getClient(cxfProxy)
+        Conduit c = client.getConduit()
         if (c instanceof HTTPConduit) {
-            HTTPConduit conduit = (HTTPConduit) c;
-            TLSClientParameters parameters = conduit.tlsClientParameters;
+            HTTPConduit conduit = (HTTPConduit) c
+            TLSClientParameters parameters = conduit.tlsClientParameters
             if (parameters == null) {
                 parameters = new TLSClientParameters();
             }
 
-            if (tlsClientParameters?.trustManagerJksPath) {
-                KeyStore keyStore = KeyStore.getInstance('JKS')
-                InputStream is = WebServiceClientFactoryImpl.classLoader.getResourceAsStream(tlsClientParameters?.trustManagerJksPath)
-                if (!is) throw new Exception('Invalid path -> ' + tlsClientParameters?.trustManagerJksPath)
-                keyStore.load(is, tlsClientParameters.trustpass.toCharArray())
-                TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-                trustFactory.init(keyStore)
-                TrustManager[] tm = trustFactory.getTrustManagers()
-                parameters.setTrustManagers(tm)
+            if (tlsClientParameters?.trustStore) {
+                TrustManager[] managers = trustManagers(
+                        tlsClientParameters.trustStore, tlsClientParameters?.trustStorePassword.toCharArray())
+                parameters.setTrustManagers(managers)
             }
 
-            if (tlsClientParameters?.keyManagerJksPath) {
-                KeyStore keyStore = KeyStore.getInstance('JKS')
-                InputStream is = WebServiceClientFactoryImpl.classLoader.getResourceAsStream(tlsClientParameters?.keyManagerJksPath)
-                if (!is) throw new Exception('Invalid path -> ' + tlsClientParameters?.keyManagerJksPath)
-                keyStore.load(is, tlsClientParameters.trustpass.toCharArray())
-                KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-                keyFactory.init(keyStore, tlsClientParameters.trustpass.toCharArray())
-                KeyManager[] km = keyFactory.getKeyManagers()
-                parameters.setKeyManagers(km)
+            if (tlsClientParameters?.keyStore) {
+                KeyManager[] managers = keyManagers(tlsClientParameters.keyStore,
+                        tlsClientParameters?.keyStorePasword.toCharArray(), tlsClientParameters?.keyPassword.toCharArray())
+                parameters.setKeyManagers(managers)
+                if (tlsClientParameters?.alias) {
+                    parameters.setCertAlias(tlsClientParameters.alias)
+                }
             }
 
             if (tlsClientParameters?.useHttpsURLConnectionDefaultSslSocketFactory) {
@@ -350,6 +344,7 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
             if (tlsClientParameters?.disableCNCheck) {
                 parameters.disableCNCheck = tlsClientParameters.disableCNCheck
             }
+
             if (tlsClientParameters?.sslCacheTimeout) {
                 parameters.sslCacheTimeout = tlsClientParameters.sslCacheTimeout
             }
@@ -396,9 +391,8 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
      * @param inFaultInterceptors In Fault Interceptors
      * @param enableDefaultLoggingInterceptors Enable the default logging interceptors in addition to any custom ones
      */
-    private
-    static void wireDefaultInterceptors(Client client, List outFaultInterceptors, List inFaultInterceptors, Boolean enableDefaultLoggingInterceptors) {
-//Only provide the default interceptors when no others are defined
+    private static void wireDefaultInterceptors(Client client, List outFaultInterceptors, List inFaultInterceptors, Boolean enableDefaultLoggingInterceptors) {
+        //Only provide the default interceptors when no others are defined
         if ((outFaultInterceptors?.size() ?: ZERO) == ZERO) {
             client.outFaultInterceptors.add(new CxfClientFaultConverter())
         }
@@ -439,8 +433,7 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
      * @param client the client object
      * @param clientPolicyMap map of receive and connection timeout/chunking params
      */
-    private
-    static void configureReceiveTimeout(Client client, Map clientPolicyMap, HTTPClientPolicy httpClientPolicy = null, AuthorizationPolicy authorizationPolicy = null) {
+    private static void configureReceiveTimeout(Client client, Map clientPolicyMap, HTTPClientPolicy httpClientPolicy = null, AuthorizationPolicy authorizationPolicy = null) {
         Conduit c = client.conduit
         if (c instanceof HTTPConduit) {
             HTTPConduit conduit = (HTTPConduit) c
@@ -465,6 +458,29 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
                 contentType: clientPolicyMap.contentType,
                 connection: clientPolicyMap.connection
         )
+    }
+
+    private static TrustManager[] trustManagers(String trustStorePath, char[] trustStorePassword) {
+        TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+        trustFactory.init(keyStore(trustStorePath, trustStorePassword))
+        CertPathTrustManagerParameters
+        return trustFactory.getTrustManagers()
+    }
+
+    private static KeyManager[] keyManagers(String keyStorePath, char[] keyStorePassword, char[] keyPassword) {
+        KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+        keyFactory.init(keyStore(keyStorePath, keyStorePassword), keyPassword)
+        return keyFactory.getKeyManagers()
+    }
+
+    private static KeyStore keyStore(String path, char[] keyStorePasswors) {
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        InputStream is = WebServiceClientFactoryImpl.classLoader.getResourceAsStream(path)
+        if (!is) {
+            throw new Exception('Invalid path -> ' + path)
+        }
+        keyStore.load(is, keyStorePasswors)
+        return keyStore
     }
 
     /**

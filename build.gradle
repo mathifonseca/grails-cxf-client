@@ -16,7 +16,7 @@ plugins {
     id "com.jfrog.bintray" version "1.2"
 }
 
-version "3.0.7"
+version "3.1.2"
 group "org.grails.plugins"
 
 apply plugin: 'maven'
@@ -110,7 +110,7 @@ uploadArchives {
                 authentication(userName: "deployment", password: "peya")
             }
 
-            pom.version = "3.1.0"
+            pom.version = version
             pom.artifactId = "cxf-client"
             pom.groupId = "com.pedidosya"
         }
