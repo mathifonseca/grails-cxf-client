@@ -40,7 +40,6 @@ interface WebServiceClientFactory {
                                AuthorizationPolicy authorizationPolicy,
                                String proxyFactoryBindingId,
                                Boolean mtomEnabled,
-                               String secureSocketProtocol,
                                Map<String, Object> requestContext,
                                Map tlsClientParameters)
 

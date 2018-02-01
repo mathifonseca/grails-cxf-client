@@ -56,7 +56,6 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
      * @param httpClientPolicy
      * @param authorizationPolicy
      * @param proxyFactoryBindingId
-     * @param secureSocketProtocol
      * @param requestContext
      * @param tlsClientParameters
      * @return
@@ -75,7 +74,6 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
                                AuthorizationPolicy authorizationPolicy,
                                String proxyFactoryBindingId,
                                Boolean mtomEnabled,
-                               String secureSocketProtocol,
                                Map<String, Object> requestContext,
                                Map tlsClientParameters) {
         WSClientInvocationHandler handler = new WSClientInvocationHandler(clientInterface)
@@ -86,7 +84,7 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
                 log.debug("Creating endpoint for service $serviceName using endpoint address $serviceEndpointAddress")
                 assignCxfProxy(wsdlURL, wsdlServiceName, wsdlEndpointName, clientInterface, serviceEndpointAddress,
                         enableDefaultLoggingInterceptors, clientPolicyMap, handler, outInterceptors,
-                        inInterceptors, inFaultInterceptors, outFaultInterceptors, httpClientPolicy, authorizationPolicy, proxyFactoryBindingId, mtomEnabled, secureSocketProtocol,
+                        inInterceptors, inFaultInterceptors, outFaultInterceptors, httpClientPolicy, authorizationPolicy, proxyFactoryBindingId, mtomEnabled,
                         requestContext, tlsClientParameters)
             } catch (Exception exception) {
                 CxfClientException cxfClientException = new CxfClientException(
@@ -117,7 +115,6 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
                           authorizationPolicy             : authorizationPolicy,
                           proxyFactoryBindingId           : proxyFactoryBindingId,
                           mtomEnabled                     : mtomEnabled,
-                          secureSocketProtocol            : secureSocketProtocol,
                           requestContext                  : requestContext,
                           tlsClientParameters             : tlsClientParameters]
         interfaceMap.put(serviceName, serviceMap)
@@ -173,15 +170,13 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
         String proxyFactoryBindingId = interfaceMap.get(serviceName).proxyFactoryBindingId
         Boolean mtomEnabled = interfaceMap.get(serviceName).mtomEnabled
         Map clientPolicyMap = interfaceMap.get(serviceName).clientPolicyMap
-        String secureSocketProtocol = interfaceMap.get(serviceName).secureSocketProtocol
         Map requestContext = interfaceMap.get(serviceName).requestContext
         Map tlsClientParameters = interfaceMap.get(serviceName).tlsClientParameters
         try {
             assignCxfProxy(wsdlURL, wsdlServiceName, wsdlEndpointName, clientInterface, serviceEndpointAddress,
                     enableDefaultLoggingInterceptors,
                     clientPolicyMap ?: [receiveTimeout: RECEIVE_TIMEOUT, connectionTimeout: CONNECTION_TIMEOUT, allowChunking: true, contentType: 'text/xml; charset=UTF-8', connection: ConnectionType.CLOSE],
-                    handler, outInterceptors, inInterceptors, inFaultInterceptors, outFaultInterceptors, httpClientPolicy, authorizationPolicy, proxyFactoryBindingId, mtomEnabled,
-                    secureSocketProtocol, requestContext, tlsClientParameters)
+                    handler, outInterceptors, inInterceptors, inFaultInterceptors, outFaultInterceptors, httpClientPolicy, authorizationPolicy, proxyFactoryBindingId, mtomEnabled, requestContext, tlsClientParameters)
             log.debug("Successfully changed the service $serviceName endpoint address to $serviceEndpointAddress")
         } catch (Exception exception) {
             handler.cxfProxy = null
@@ -208,7 +203,6 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
      * @param httpClientPolicy
      * @param authorizationPolicy
      * @param proxyFactoryBindingId
-     * @param secureSocketProtocol
      */
     private void assignCxfProxy(String wsdlURL,
                                 String wsdlServiceName,
@@ -226,7 +220,6 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
                                 AuthorizationPolicy authorizationPolicy,
                                 String proxyFactoryBindingId,
                                 Boolean mtomEnabled,
-                                String secureSocketProtocol,
                                 Map<String, Object> requestContext,
                                 Map tlsClientParameters) {
         JaxWsProxyFactoryBean clientProxyFactory = new JaxWsProxyFactoryBean(serviceClass: serviceInterface,
@@ -256,8 +249,8 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
 
         addInterceptors(cxfProxy, enableDefaultLoggingInterceptors, clientPolicyMap,
                 outInterceptors, inInterceptors, inFaultInterceptors, outFaultInterceptors, httpClientPolicy, authorizationPolicy)
-        if (secureSocketProtocol || tlsClientParameters?.secureSocketProtocol != null) {
-            setSsl(cxfProxy, secureSocketProtocol, tlsClientParameters)
+        if (tlsClientParameters?.secureSocketProtocol) {
+            setSsl(cxfProxy, tlsClientParameters)
         }
 
         assignContexts(cxfProxy, requestContext)
@@ -291,65 +284,59 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
         }
     }
 
-    // Todo
-    private static void setSsl(Object cxfProxy, String secureSocketProtocol, Map tlsClientParameters) {
-        //secureSocketProtocol should be one in Constants file, but let them set it to whatever
-        if (![CxfClientConstants.SSL_PROTOCOL_SSLV3, CxfClientConstants.SSL_PROTOCOL_TLSV1].contains(secureSocketProtocol)) {
-            log.info "The provided secureSocketProtocol of $secureSocketProtocol might not be recognized"
-        }
-
+    private static void setSsl(Object cxfProxy, Map tlsClientParameters) {
         Client client = ClientProxy.getClient(cxfProxy)
-        Conduit c = client.getConduit()
-        if (c instanceof HTTPConduit) {
-            HTTPConduit conduit = (HTTPConduit) c
-            TLSClientParameters parameters = conduit.tlsClientParameters
+        Conduit conduit = client.getConduit()
+        if (conduit instanceof HTTPConduit) {
+            HTTPConduit httpConduit = (HTTPConduit) conduit
+            TLSClientParameters parameters = httpConduit.tlsClientParameters
             if (parameters == null) {
-                parameters = new TLSClientParameters();
+                parameters = new TLSClientParameters()
             }
 
-            if (tlsClientParameters?.trustStore) {
+            if (tlsClientParameters.trustStore) {
                 TrustManager[] managers = trustManagers(
-                        tlsClientParameters.trustStore, tlsClientParameters?.trustStorePassword.toCharArray())
+                        tlsClientParameters.trustStore, tlsClientParameters.trustStorePassword?.toCharArray())
                 parameters.setTrustManagers(managers)
             }
 
-            if (tlsClientParameters?.keyStore) {
+            if (tlsClientParameters.keyStore) {
                 KeyManager[] managers = keyManagers(tlsClientParameters.keyStore,
-                        tlsClientParameters?.keyStorePasword.toCharArray(), tlsClientParameters?.keyPassword.toCharArray())
+                        tlsClientParameters.keyStorePasword?.toCharArray(), tlsClientParameters.keyPassword?.toCharArray())
                 parameters.setKeyManagers(managers)
-                if (tlsClientParameters?.alias) {
+                if (tlsClientParameters.alias) {
                     parameters.setCertAlias(tlsClientParameters.alias)
                 }
             }
 
-            if (tlsClientParameters?.useHttpsURLConnectionDefaultSslSocketFactory) {
+            if (tlsClientParameters.useHttpsURLConnectionDefaultSslSocketFactory) {
                 parameters.useHttpsURLConnectionDefaultSslSocketFactory = tlsClientParameters.useHttpsURLConnectionDefaultSslSocketFactory
             }
 
-            if (tlsClientParameters?.cipherSuitesFilter) {
+            if (tlsClientParameters.cipherSuitesFilter) {
                 parameters.cipherSuitesFilter = new FiltersType()
-                if (tlsClientParameters?.cipherSuitesFilter?.exclude) {
+                if (tlsClientParameters.cipherSuitesFilter?.exclude) {
                     parameters.cipherSuitesFilter.exclude.addAll(tlsClientParameters.cipherSuitesFilter.exclude.collect())
                 }
 
-                if (tlsClientParameters?.cipherSuitesFilter?.include) {
+                if (tlsClientParameters.cipherSuitesFilter?.include) {
                     parameters.cipherSuitesFilter.include.addAll(tlsClientParameters.cipherSuitesFilter.include.collect())
                 }
             }
 
-            if (tlsClientParameters?.useHttpsURLConnectionDefaultHostnameVerifier) {
+            if (tlsClientParameters.useHttpsURLConnectionDefaultHostnameVerifier) {
                 parameters.useHttpsURLConnectionDefaultHostnameVerifier = tlsClientParameters.useHttpsURLConnectionDefaultHostnameVerifier
             }
 
-            if (tlsClientParameters?.disableCNCheck) {
+            if (tlsClientParameters.disableCNCheck) {
                 parameters.disableCNCheck = tlsClientParameters.disableCNCheck
             }
 
-            if (tlsClientParameters?.sslCacheTimeout) {
+            if (tlsClientParameters.sslCacheTimeout instanceof Integer) {
                 parameters.sslCacheTimeout = tlsClientParameters.sslCacheTimeout
             }
 
-            parameters.setSecureSocketProtocol(secureSocketProtocol ?: tlsClientParameters.secureSocketProtocol)
+            parameters.setSecureSocketProtocol(tlsClientParameters.secureSocketProtocol)
             conduit.tlsClientParameters = parameters
         }
     }

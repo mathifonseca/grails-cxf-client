@@ -171,7 +171,6 @@ Used for easily calling soap web services.  Provides wsdl2java grails target to 
 					authorizationPolicy = ref("${client.authorizationPolicy}")
 				}
 				proxyFactoryBindingId = client?.proxyFactoryBindingId ?: ""
-				secureSocketProtocol = client?.secureSocketProtocol ?: ""
 				//should be one of the constants in CxfClientConstants, but doesn't have to be
 				requestContext = client?.requestContext ?: [:]
 				tlsClientParameters = client?.tlsClientParameters ?: [:]

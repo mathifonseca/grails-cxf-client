@@ -49,7 +49,6 @@ class WebServiceClientFactoryImplSpec extends Specification {
 		factory.interfaceMap.get("testService").handler != null
 		!factory.interfaceMap.get("testService").httpClientPolicy
 		factory.interfaceMap.get("testService").proxyFactoryBindingId == "http://schemas.xmlsoap.org/wsdl/soap12/"
-		factory.interfaceMap.get("testService").secureSocketProtocol == CxfClientConstants.SSL_PROTOCOL_SSLV3
 		factory.interfaceMap.get("testService").tlsClientParameters.disableCNCheck == false
 		factory.interfaceMap.get("testService").tlsClientParameters.sslCacheTimeout == 60
 
@@ -93,7 +92,6 @@ class WebServiceClientFactoryImplSpec extends Specification {
 		factory.interfaceMap.get("testService").clientPolicyMap.connection == ConnectionType.KEEP_ALIVE
 		!factory.interfaceMap.get("testService").proxyFactoryBindingId
 		!factory.interfaceMap.get("testService").mtomEnabled
-		!factory.interfaceMap.get("testService").secureSocketProtocol
 		!factory.interfaceMap.get("testService").requestContext
 		!factory.interfaceMap.get("testService").tlsClientParameters
 	}
@@ -131,7 +129,6 @@ class WebServiceClientFactoryImplSpec extends Specification {
 		!factory.interfaceMap.get("testService").httpClientPolicy.allowChunking
 		!factory.interfaceMap.get("testService").proxyFactoryBindingId
 		!factory.interfaceMap.get("testService").mtomEnabled
-		!factory.interfaceMap.get("testService").secureSocketProtocol
 		!factory.interfaceMap.get("testService").requestContext
 		!factory.interfaceMap.get("testService").tlsClientParameters
 	}
@@ -168,7 +165,6 @@ class WebServiceClientFactoryImplSpec extends Specification {
 		!factory.interfaceMap.get("testService").authorizationPolicy
 		!factory.interfaceMap.get("testService").proxyFactoryBindingId
 		!factory.interfaceMap.get("testService").mtomEnabled
-		!factory.interfaceMap.get("testService").secureSocketProtocol
 		!factory.interfaceMap.get("testService").requestContext
 		!factory.interfaceMap.get("testService").tlsClientParameters
 	}
@@ -204,7 +200,6 @@ class WebServiceClientFactoryImplSpec extends Specification {
 		!factory.interfaceMap.get("testService").httpClientPolicy
 		!factory.interfaceMap.get("testService").proxyFactoryBindingId
 		!factory.interfaceMap.get("testService").mtomEnabled
-		!factory.interfaceMap.get("testService").secureSocketProtocol
 		!factory.interfaceMap.get("testService").requestContext
 		!factory.interfaceMap.get("testService").tlsClientParameters
 	}
@@ -298,7 +293,6 @@ class WebServiceClientFactoryImplSpec extends Specification {
 		!factory.interfaceMap.get("testService").httpClientPolicy
 		factory.interfaceMap.get("testService").proxyFactoryBindingId == "http://schemas.xmlsoap.org/wsdl/soap12/"
 		factory.interfaceMap.get("testService").mtomEnabled
-		!factory.interfaceMap.get("testService").secureSocketProtocol
 		!factory.interfaceMap.get("testService").tlsClientParameters
 		factory.interfaceMap.get("testService").handler != null
 		factory.interfaceMap.get("testService").handler.cxfProxy.h.client.currentRequestContext.get("org.apache.cxf.message.Message.ENDPOINT_ADDRESS") == "http://localhost:8080/cxf-client/old"
@@ -328,7 +322,6 @@ class WebServiceClientFactoryImplSpec extends Specification {
 		!factory.interfaceMap.get("testService").authorizationPolicy
 		factory.interfaceMap.get("testService").proxyFactoryBindingId == "http://schemas.xmlsoap.org/wsdl/soap12/"
 		factory.interfaceMap.get("testService").mtomEnabled
-		!factory.interfaceMap.get("testService").secureSocketProtocol
 		!factory.interfaceMap.get("testService").tlsClientParameters
 		factory.interfaceMap.get("testService").handler != null
 		factory.interfaceMap.get("testService").handler.cxfProxy.h.client.currentRequestContext.get("org.apache.cxf.message.Message.ENDPOINT_ADDRESS") == "http://localhost:8080/cxf-client/old"
@@ -364,7 +357,6 @@ class WebServiceClientFactoryImplSpec extends Specification {
 		!factory.interfaceMap.get("testService").authorizationPolicy
 		factory.interfaceMap.get("testService").proxyFactoryBindingId == "http://schemas.xmlsoap.org/wsdl/soap12/"
 		factory.interfaceMap.get("testService").mtomEnabled
-		!factory.interfaceMap.get("testService").secureSocketProtocol
 		!factory.interfaceMap.get("testService").tlsClientParameters
 		factory.interfaceMap.get("testService").handler != null
 		factory.interfaceMap.get("testService").handler.cxfProxy.h.client.currentRequestContext.get("org.apache.cxf.message.Message.ENDPOINT_ADDRESS") == "http://localhost:8080/cxf-client/old"
@@ -394,7 +386,6 @@ class WebServiceClientFactoryImplSpec extends Specification {
 		!factory.interfaceMap.get("testService").authorizationPolicy
 		factory.interfaceMap.get("testService").proxyFactoryBindingId == "http://schemas.xmlsoap.org/wsdl/soap12/"
 		factory.interfaceMap.get("testService").mtomEnabled
-		!factory.interfaceMap.get("testService").secureSocketProtocol
 		!factory.interfaceMap.get("testService").tlsClientParameters
 		factory.interfaceMap.get("testService").handler != null
 		factory.interfaceMap.get("testService").handler.cxfProxy.h.client.currentRequestContext.get("org.apache.cxf.message.Message.ENDPOINT_ADDRESS") == "http://localhost:8080/cxf-client/old"
@@ -425,7 +416,6 @@ class WebServiceClientFactoryImplSpec extends Specification {
 				[new CxfClientFaultConverter()], null, null, "http://schemas.xmlsoap.org/wsdl/soap12/", false, null, [:],
 				[disableCNCheck      : true,
 				 sslCacheTimeout     : 100,
-				 secureSocketProtocol: CxfClientConstants.SSL_PROTOCOL_SSLV3,
 				 cipherSuitesFilter  : [include: ['.*_EXPORT_.*', '.*_EXPORT1024_.*'], exclude: ['.*_DH_anon_.*']]
 				])
 
@@ -448,7 +438,6 @@ class WebServiceClientFactoryImplSpec extends Specification {
 		!factory.interfaceMap.get("testService").authorizationPolicy
 		factory.interfaceMap.get("testService").proxyFactoryBindingId == "http://schemas.xmlsoap.org/wsdl/soap12/"
 		!factory.interfaceMap.get("testService").mtomEnabled
-		!factory.interfaceMap.get("testService").secureSocketProtocol
 		factory.interfaceMap.get("testService").tlsClientParameters.disableCNCheck == true
 		factory.interfaceMap.get("testService").tlsClientParameters.sslCacheTimeout == 100
 		factory.interfaceMap.get("testService").tlsClientParameters.secureSocketProtocol == CxfClientConstants.SSL_PROTOCOL_SSLV3
