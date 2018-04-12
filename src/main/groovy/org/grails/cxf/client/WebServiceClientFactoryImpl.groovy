@@ -450,7 +450,6 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
     private static TrustManager[] trustManagers(String trustStorePath, char[] trustStorePassword) {
         TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
         trustFactory.init(keyStore(trustStorePath, trustStorePassword))
-        CertPathTrustManagerParameters
         return trustFactory.getTrustManagers()
     }
 
@@ -460,13 +459,13 @@ class WebServiceClientFactoryImpl implements WebServiceClientFactory {
         return keyFactory.getKeyManagers()
     }
 
-    private static KeyStore keyStore(String path, char[] keyStorePasswors) {
-        KeyStore keyStore = KeyStore.getInstance("JKS");
+    private static KeyStore keyStore(String path, char[] keyStorePassword) {
+        KeyStore keyStore = KeyStore.getInstance("JKS")
         InputStream is = WebServiceClientFactoryImpl.classLoader.getResourceAsStream(path)
         if (!is) {
             throw new Exception('Invalid path -> ' + path)
         }
-        keyStore.load(is, keyStorePasswors)
+        keyStore.load(is, keyStorePassword)
         return keyStore
     }
 
